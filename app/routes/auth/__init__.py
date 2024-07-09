@@ -1,0 +1,1 @@
+from app.routes.auth.auth import router

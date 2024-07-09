@@ -1,0 +1,593 @@
+{% extends 'includes/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<style>
+    .table-sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff; /* Cor de fundo do cabeçalho */
+        z-index: 1000; /* Garante que o cabeçalho esteja acima do conteúdo rolando */
+    }
+
+    .table-responsive {
+        overflow-x: auto; /* Garante a rolagem horizontal, se necessário */
+    }
+
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+    /* Apenas barra horizontal */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+
+</style>
+<div class="row">
+    <div class="col-lg-8 mb-4 order-0">
+        <div class="card">
+            <div class="d-flex align-items-end row">
+                <div class="col-sm-7">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Bem Vindo, {{ current_user.fullname }}! 🎉</h5>
+                        <p class="mb-4">
+                            Você acaba de achar a solução para o seus problemas com contas em casa
+                            de apostas.
+                        </p>
+
+                        <!--                        <a href="javascript:;" class="btn btn-sm btn-outline-primary">View-->
+                        <!--                            Badges</a>-->
+                    </div>
+                </div>
+                <div class="col-sm-5 text-center text-sm-left">
+                    <div class="card-body pb-0 px-0 px-md-4">
+                        <img
+                                src="/static/assets/img/illustrations/man-with-laptop-light.png"
+                                height="140"
+                                alt="View Badge User"
+                                data-app-dark-img="illustrations/man-with-laptop-dark.png"
+                                data-app-light-img="illustrations/man-with-laptop-light.png"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 order-1">
+        <div class="row">
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img
+                                        src="/static/assets/img/icons/unicons/chart-success.png"
+                                        alt="chart success"
+                                        class="rounded"
+                                />
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Dados</span>
+                        <h3 class="card-title mb-2">{{ current_user.owned_datas | length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img
+                                        src="/static/assets/img/icons/unicons/wallet-info.png"
+                                        alt="Credit Card"
+                                        class="rounded"
+                                />
+                            </div>
+                        </div>
+                        <span>Dados Disponíveis</span>
+                        <h3 class="card-title text-nowrap mb-2">{{ datas | length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Total Revenue -->
+    <div class="col-12 col-lg-8 order-2 order-md-3 order-lg-2 mb-4">
+        <div class="card">
+            <div class="row row-bordered g-0">
+                <div class="col-md-12">
+                    <h5 class="card-header m-0 me-2 pb-3">Homens/Mulheres por Estado</h5>
+                    <div id="chartMunicipes" class="px-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Total Revenue -->
+    <div class="col-12 col-md-8 col-lg-4 order-3 order-md-2">
+        <div class="row">
+            <div class="col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="/static/assets/img/icons/unicons/paypal.png"
+                                     alt="Credit Card" class="rounded"/>
+                            </div>
+                        </div>
+                        <span class="d-block mb-1">Com Pix</span>
+                        <h3 class="card-title text-nowrap mb-2">{{ with_pix_amount }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="/static/assets/img/icons/unicons/cc-primary.png"
+                                     alt="Credit Card" class="rounded"/>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Sem Pix</span>
+                        <h3 class="card-title mb-2">{{ no_pix_amount }}</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- </div>
+<div class="row"> -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                            <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
+                                <div class="card-title">
+                                    <h5 class="text-nowrap mb-2">Dados Minerados</h5>
+                                    <span class="badge bg-label-secondary rounded-pill">Offline</span>
+                                </div>
+                                <div class="mt-sm-auto">
+                                    <h3 class="mb-0">{{ persons| length}}</h3>
+                                </div>
+                            </div>
+                            <div id="addedReportChat"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <!-- Order Statistics -->
+    <div class="col-md-6 col-lg-4 col-xl-4 order-0">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2">Faixa Etárias</h5>
+                </div>
+            </div>
+            <div class="card-body align-content-center">
+                <div id="personsEtaryChart"></div>
+            </div>
+        </div>
+    </div>
+    <!--/ Order Statistics -->
+
+    <div class="col-md-6 col-lg-8 mb-4 mb-md-0">
+        <div class="card">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border-radius: 30px;">
+                <table class="table text-nowrap" id="scrollTable">
+                    <thead class="table-sticky-header rounded">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Idade</th>
+                        <th>CPF</th>
+                        <th>Nome da Mãe</th>
+                        <th>Vivo/Morto</th>
+                        <th>Pix</th>
+                        <th>Receita</th>
+                        <th>Betano</th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0 min-h-75">
+                    {% for person in persons %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-medium lh-1">{{ person.name }}</span>
+                                    <!-- <small class="text-muted">OnePlus</small> -->
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {{ person.birthday.strftime('%d/%m/%Y')}}
+                        </td>
+                        <td>
+                            {{ person.cpf }}
+                        </td>
+                        <td>{{ person.mother_name }}</td>
+                        <td>{% if person.is_dead == False %}<span class="badge bg-label-success">Vivo</span>{% else
+                            %}<span class="badge bg-label-secondary">Morto</span>{% endif %}
+                        </td>
+                        <td>{% if person.use_pix == 2 %}<span class="badge bg-label-success">Sem Pix</span>{% elif
+                            person.use_pix == 1 %}<span class="badge bg-label-danger">Com Pix</span>{% else %}<span
+                                    class="badge bg-label-secondary">Não Verificado</span>{% endif %}
+                        </td>
+                        <td>{% if person.receipt_status == 2 %}<span class="badge bg-label-success">Regular</span>{%
+                            elif person.receipt_status == 1 %}<span class="badge bg-label-danger">Irregular</span>{%
+                            else %}<span class="badge bg-label-secondary">Não Verificado</span>{% endif %}
+                        </td>
+                        <td>{% if person.use_betano == 2 %}<span class="badge bg-label-success">Sem Conta</span>{% elif
+                            person.use_betano == 1 %}<span class="badge bg-label-danger">Com Conta</span>{% else %}<span
+                                    class="badge bg-label-secondary">Não Verificado</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="/static/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+<script src="https://common.olemiss.edu/_js/datatables/media/js/jquery.js"></script>
+<script src="https://common.olemiss.edu/_js/datatables/media/js/jquery.dataTables.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var h = document.querySelector("#chartMunicipes");
+        var p = {
+            chart: {
+                type: "bar",
+                height: 275,
+                stacked: true,
+                toolbar: {
+                    show: false
+                }
+            },
+            series: [{
+                name: "Homens",
+                data: {{ chart_one['habitantes_homens'] | safe }} // Substitua pelos seus dados reais
+            }, {
+                name: "Mulheres",
+                data: {{ chart_one['habitantes_mulheres'] | safe }} // Substitua pelos seus dados reais
+            }],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: "20%",
+                    borderRadius: 10,
+                    startingShape: "rounded",
+                    endingShape: "rounded"
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: "smooth",
+                width: 3,
+                lineCap: "round",
+                colors: ['#d9534f'] // Substitua 'o' por '#d9534f' ou a cor desejada
+            },
+            legend: {
+                show: true
+            },
+            colors: ['#d9534f', "#435971"],
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                show: false,
+                strokeDashArray: 7,
+                padding: {
+                    top: -10,
+                    bottom: -12,
+                    left: 0,
+                    right: 0
+                }
+            },
+            xaxis: {
+                categories: {{ chart_one['nomes_estados'] | safe }}, // Certifique-se de que 'municipes' esteja corretamente formatado
+                labels: {
+                    show: true,
+                    style: {
+                        colors: '#6c757d', // Substitua 'r' por '#6c757d' ou a cor desejada
+                        fontSize: "13px"
+                    }
+                },
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                }
+            },
+            yaxis: {
+                show: false
+            },
+            responsive: [{
+                breakpoint: 1440,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 10,
+                            columnWidth: "50%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 1300,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 11,
+                            columnWidth: "55%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 1200,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 10,
+                            columnWidth: "45%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 1040,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 10,
+                            columnWidth: "50%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 992,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 12,
+                            columnWidth: "40%"
+                        }
+                    },
+                    chart: {
+                        type: "bar",
+                        height: 320
+                    }
+                }
+            }, {
+                breakpoint: 768,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 11,
+                            columnWidth: "25%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 576,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 10,
+                            columnWidth: "35%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 440,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 10,
+                            columnWidth: "45%"
+                        }
+                    }
+                }
+            }, {
+                breakpoint: 360,
+                options: {
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 8,
+                            columnWidth: "50%"
+                        }
+                    }
+                }
+            }],
+            states: {
+                hover: {
+                    filter: {
+                        type: "none"
+                    }
+                },
+                active: {
+                    filter: {
+                        type: "none"
+                    }
+                }
+            }
+        };
+
+        if (h !== null) {
+            new ApexCharts(h, p).render();
+        }
+    });
+</script>
+<script>
+    const profileReportChartEl = document.querySelector('#addedReportChat'),
+    profileReportChartConfig = {
+      chart: {
+        height: 80,
+        // width: 175,
+        type: 'line',
+        toolbar: {
+          show: false
+        },
+        dropShadow: {
+          enabled: true,
+          top: 10,
+          left: 5,
+          blur: 3,
+          color: config.colors.warning,
+          opacity: 0.15
+        },
+        sparkline: {
+          enabled: true
+        }
+      },
+      grid: {
+        show: false,
+        padding: {
+          right: 8
+        }
+      },
+      colors: [config.colors.warning],
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        width: 5,
+        curve: 'smooth'
+      },
+      series: [
+        {
+          data: {{ daily_count | safe }}
+        }
+      ],
+      xaxis: {
+        show: false,
+        lines: {
+          show: false
+        },
+        labels: {
+          show: false
+        },
+        axisBorder: {
+          show: false
+        }
+      },
+      yaxis: {
+        show: false
+      }
+    };
+  if (typeof profileReportChartEl !== undefined && profileReportChartEl !== null) {
+    const profileReportChart = new ApexCharts(profileReportChartEl, profileReportChartConfig);
+    profileReportChart.render();
+  }
+</script>
+<script>
+
+    let o, e, r, t, a, s, i, n, l, d;
+    d =  (o = config.colors.white, e = config.colors.headingColor, r = config.colors.textMuted, t = config.colors.bodyColor, s = config.colors.borderColor, a = "", i = "#e1e2ff", n = "#c3c4ff", l = "#a5a7ff", "#696cff");
+
+    var c = {
+        donut: {
+            series1: "#4CAF50",                  // Verde
+            series2: "#2196F3",                  // Azul
+            series3: "#FFC107",                  // Amarelo
+            series4: "#FF5722",                  // Laranja
+            series5: "#000000"                   // Roxo
+        }
+    };
+
+    const chartOrderStatistics = document.querySelector('#personsEtaryChart'),
+    orderChartConfig = {
+            chart: {
+                height: 350,
+                width: 350,
+                parentHeightOffset: 1,
+                type: "donut"
+            },
+            labels: ['0-14', '14-25', '25-50', '50-75', '75+'],
+            series: {{ etary | safe }},
+            colors: [c.donut.series1, c.donut.series2, c.donut.series3, c.donut.series4],
+            stroke: {
+                width: 0
+            },
+            dataLabels: {
+                enabled: !1,
+                formatter: function(o, e) {
+                    return parseInt(o) + "%"
+                }
+            },
+            legend: {
+                show: true
+            },
+            tooltip: {
+                theme: !1
+            },
+            grid: {
+                padding: {
+                    top: 5,
+                    bottom: 5
+                }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: "75%",
+                        labels: {
+                            show: !0,
+                            value: {
+                                fontSize: "1.5rem",
+                                fontFamily: "Public Sans",
+                                color: e,
+                                fontWeight: 500,
+                                offsetY: -15,
+                                formatter: function(o) {
+                                    return parseInt(o) + "%"
+                                }
+                            },
+                            name: {
+                                offsetY: 20,
+                                fontFamily: "Public Sans"
+                            },
+                            total: {
+                                show: !0,
+                                fontSize: ".7rem",
+                                label: "",
+                                color: t,
+                                formatter: function(o) {
+                                    return "Pessoas"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+  if (typeof chartOrderStatistics !== undefined && chartOrderStatistics !== null) {
+    const statisticsChart = new ApexCharts(chartOrderStatistics, orderChartConfig);
+    statisticsChart.render();
+  }
+</script>
+<script>
+
+    $('#persons_list').dataTable( {
+        "data": {{ person_table | safe }},
+        "columns": [
+            { "title": "Nome", width: '30%'},
+            { "title": "CPF" },
+            { "title": "Nascimento" },
+            { "title": "Nome da Mãe", "class": "center" },
+            { "title": "Pix", "class": "center" },
+            { "title": "Receita", "class": "center" },
+            { "title": "Betano", "class": "center" },
+            { "title": "Vivo/Morto", "class": "center" },
+        ]
+    } );
+</script>
+{% endblock %}

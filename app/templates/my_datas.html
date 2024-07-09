@@ -1,0 +1,171 @@
+{% extends 'includes/base.html' %}
+{% block title %}Dados Comprados{% endblock %}
+{% block content %}
+<style>
+    .table-sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff; /* Cor de fundo do cabeçalho */
+        z-index: 1000; /* Garante que o cabeçalho esteja acima do conteúdo rolando */
+    }
+
+    .table-responsive {
+        overflow-x: auto; /* Garante a rolagem horizontal, se necessário */
+    }
+
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+    /* Apenas barra horizontal */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+
+</style>
+<div class="row">
+    <div class="col-lg-12 col-md-4 order-1">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="accountsTable"></table>
+    </div>
+</div>
+
+<script src="/static/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+<script src="https://common.olemiss.edu/_js/datatables/media/js/jquery.js"></script>
+<script src="https://common.olemiss.edu/_js/datatables/media/js/jquery.dataTables.js"></script>
+
+<script>
+
+    function obfuscateCPF(cpf) {
+        // Remove todos os caracteres que não sejam dígitos
+        let cleanedCPF = cpf.replace(/\D/g, '');
+
+        // Verifica se o CPF tem 11 dígitos
+        if (cleanedCPF.length !== 11) {
+            throw new Error('CPF inválido. Deve conter 11 dígitos.');
+        }
+
+        // Ofusca os dígitos do meio
+        let obfuscatedCPF = cleanedCPF.slice(0, 3) + '.***.***-' + cleanedCPF.slice(-2);
+
+        return obfuscatedCPF;
+    }
+
+    function obfuscateName(name) {
+        // Separa o nome em partes
+        let nameParts = name.split(' ');
+
+        // Ofusca o primeiro nome (3 últimos caracteres)
+        if (nameParts.length > 0) {
+            let firstName = nameParts[0];
+            let obfuscatedFirstName = firstName.slice(0, -3) + '***';
+            nameParts[0] = obfuscatedFirstName;
+        }
+
+        // Ofusca os nomes do meio completamente
+        for (let i = 1; i < nameParts.length - 1; i++) {
+            nameParts[i] = nameParts[i].replace(/./g, '*');
+        }
+
+        // Ofusca os 3 primeiros caracteres do último nome
+        if (nameParts.length > 1) {
+            let lastName = nameParts[nameParts.length - 1];
+            let obfuscatedLastName = '***' + lastName.slice(3);
+            nameParts[nameParts.length - 1] = obfuscatedLastName;
+        }
+
+        // Junta o nome novamente
+        return nameParts.join(' ');
+    }
+
+    $('#accountsTable').dataTable( {
+        "data": {{ person_table | safe }},
+        "columns": [
+            { "title": "Nome", width: '20%'},
+            { "title": "CPF" },
+            { "title": "Nascimento" },
+            { "title": "Nome da Mãe", "class": "center" },
+            { "title": "Pix", "class": "center" },
+            { "title": "Receita", "class": "center" },
+            { "title": "Betano", "class": "center" },
+            { "title": "Vivo/Morto", "class": "center" },
+            { "title": "Comprar", "class": "center" },
+        ],
+        columnDefs: [
+        {
+            targets: 0,
+            render: function (data, type, row, meta) {
+                return obfuscateName(data);
+            }
+        },
+        {
+            targets: 1,
+            render: function (data, type, row, meta) {
+                return obfuscateCPF(data);
+            }
+        },
+        {
+            targets: 3,
+            render: function (data, type, row, meta) {
+                return obfuscateName(data);
+            }
+        },
+        {
+            targets: 4,
+            render: function (data, type, row, meta) {
+                 if (data == 1){
+                    return '<span class="badge bg-label-success ">Sem Pix</span>';
+                 }else if (data == 2){
+                    return '<span class="badge bg-label-danger ">Com Pix</span>';
+                 }else{
+                    return '<span class="badge bg-label-secondary ">Não Verificado</span>';
+                 }
+            }
+        },
+        {
+            targets: 5,
+            render: function (data, type, row, meta) {
+                if(data == "false"){
+                    return '<span class="badge bg-label-secondary">Não Verificado</span>';
+                }else if(data == "true"){
+                    return '<span class="badge bg-label-success">Regular</span>';
+                }
+            }
+        },
+        {
+            targets: 6,
+            render: function (data, type, row, meta) {
+                 if (data == 1){
+                    return '<span class="badge bg-label-success">Sem Conta</span>';
+                 }else if (data == 2){
+                    return '<span class="badge bg-label-danger">Com Conta</span>';
+                 }else{
+                    return '<span class="badge bg-label-secondary">Não Verificado</span>';
+                 }
+            }
+        },
+        {
+            targets: 7,
+            render: function (data, type, row, meta) {
+                 if (data == "Vivo"){
+                    return '<span class="badge bg-label-success">Vivo</span>';
+                 }else if (data == "Morto"){
+                    return '<span class="badge bg-label-danger">Morto</span>';
+                 }else{
+                    return '<span class="badge bg-label-secondary">Não Verificado</span>';
+                 }
+            }
+        },
+        {
+            targets: 8,
+            data: null,
+            render: function(data, type, full) {
+                return '<button type="button" class="btn btn-outline-primary"><span class="tf-icons bx bx-cart me-1"></span></button>';
+            }
+        }
+    ]
+    } );
+</script>
+{% endblock %}
